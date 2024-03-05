@@ -1,0 +1,9 @@
+{
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "cSpell.words": ["clsx", "middlewares"],
+    "prettier.tabWidth": 4,
+    "color-picker.languages": ["python", "javascript", "typescript"],
+    "spellright.language": ["en"],
+    "spellright.documentTypes": ["markdown", "latex", "plaintext"]
+}
