@@ -6,6 +6,11 @@ let todolist = [
         status: "new",
     },
     {
+        id: 1,
+        task: "Learn JavaScript 2",
+        status: "new",
+    },
+    {
         id: 2,
         task: "Learn TypeScript",
         status: "doing",
@@ -39,11 +44,21 @@ const renderBtn = (id) => {
         btn = `
         <div class="btns">
             <button onclick="editTodo(${id})">Edit</button>
-            <button onclick=deleteTodo(${id})>Delete</button>
         </div>
         `;
     }
     return btn;
+};
+
+const renderContent = (item) => {
+    let content;
+
+    if (editMode && editMode.id === item.id) {
+        content = `<input id="inputEdit"  type="text" />`;
+    } else {
+        content = `<span>${item.task}</span>`;
+    }
+    return content;
 };
 
 const renderNewTasks = () => {
@@ -52,10 +67,10 @@ const renderNewTasks = () => {
     let html = "";
     newTasks.forEach((item) => {
         html += `
-      <div class="new-item" draggable="true">
+      <div class="todo-item new-item" draggable="true" data="${item.id}">
         <div class="todo-task">
-            <span>${item.task}</span>
-            <span onclick= "editStatus(${item.id})">edit status</span>
+            ${renderContent(item)}            
+            <span onclick= "editStatus(${item.id} ,'doing')">Do task</span>
         </div>
         ${renderBtn(item.id)}
       </div>
@@ -69,10 +84,12 @@ const renderDoingTasks = () => {
     let html = "";
     doingTasks.forEach((item) => {
         html += `
-      <div class="doing-item" draggable="true">
+      <div class="todo-item doing-item" draggable="true" data="${item.id}">
         <div div class="todo-task">
-            <span>${item.task}</span>
-            <span onclick= "editStatus(${item.id})">edit status</span>
+            ${renderContent(item)} 
+            <span onclick= "editStatus(${
+                item.id
+            }, 'finished')">Finished task</span>
          </div>
         ${renderBtn(item.id)}
       </div>
@@ -87,10 +104,10 @@ const renderFinishedTasks = () => {
     let html = "";
     finishedTasks.forEach((item) => {
         html += `
-      <div class="finishe-item" draggable="true">
+      <div class="todo-item finishe-item" draggable="true" data="${item.id}">
         <div div class="todo-task">
             <span class="todo-task__title">${item.task}</span>
-            <span onclick= "editStatus(${item.id})">edit status</span>
+            <span onclick= "editStatus(${item.id}, 'remove')">Delete task</span>
         </div>
       </div>
     `;
@@ -99,29 +116,23 @@ const renderFinishedTasks = () => {
 };
 
 const createTodoApp = () => {
-    let addBtn;
-    if (editMode) {
-        addBtn = "";
-    } else {
-        addBtn = `<button id="btnAdd" onclick="addTodo()">Add</button>`;
-    }
     return `
     <div>
         <div class="todo-container">
-            <div class="todo-list__item">
+            <div class="todo-list__item" data-status="new">
                 <h2 class="todo-heading">New tasks</h2>
                 <div>
                     <input id="input"  type="text" placeholder="Add job"/>
-                    ${addBtn}
+                    <button id="btnAdd" onclick="addTodo()">Add</button>
                 </div>
                 ${renderNewTasks()}
             </div>
-            <div class="todo-list__item">
+            <div class="todo-list__item" data-status="doing">
                 <h2 class="todo-heading">Doing tasks</h2>
                 ${renderDoingTasks()}
               
             </div>
-            <div class="todo-list__item">
+            <div class="todo-list__item" data-status="finished">
                 <h2 class="todo-heading">Finished tasks</h2>
                 ${renderFinishedTasks()}
             </div>
@@ -151,35 +162,87 @@ const addTodo = () => {
     inputEl.value = "";
 
     render(createTodoApp(), appEl);
-};
-
-const deleteTodo = (id) => {
-    const currenTodo = todolist.filter((item) => item.id !== id);
-    todolist = [...currenTodo];
-    render(createTodoApp(), appEl);
+    attachDragListeners();
 };
 
 const editTodo = (id) => {
     editMode = { id: id };
     render(createTodoApp(), appEl);
     const currentTodo = todolist.find((item) => item.id === id);
-    const inputEl = document.querySelector("#input");
+    const inputEl = document.querySelector("#inputEdit");
     inputEl.value = currentTodo.task;
 };
 
 const saveTodo = (id) => {
-    const inputEl = document.querySelector("#input");
+    const inputEl = document.querySelector("#inputEdit");
     const currentTodo = todolist.find((item) => item.id === id);
     currentTodo.task = inputEl.value;
     editMode = null;
     render(createTodoApp(), appEl);
+    attachDragListeners();
 };
 
 const cancelSaveTodo = () => {
     editMode = null;
     render(createTodoApp(), appEl);
+    attachDragListeners();
 };
 
-const editStatus = (id) => {
+const editStatus = (id, status) => {
     const currentTodo = todolist.find((item) => item.id === id);
+
+    if (status === "remove") {
+        const currenTodo = todolist.filter((item) => item.id !== id);
+        todolist = [...currenTodo];
+        render(createTodoApp(), appEl);
+        attachDragListeners();
+        return;
+    }
+
+    if (status) {
+        currentTodo.status = status;
+        render(createTodoApp(), appEl);
+        attachDragListeners();
+    }
 };
+
+const attachDragListeners = () => {
+    const dragZones = document.querySelectorAll(".todo-list__item");
+    const dragItems = document.querySelectorAll(".todo-item");
+
+    let currentTarget = null;
+
+    dragItems.forEach((item) => {
+        item.addEventListener("dragstart", function () {
+            currentTarget = this;
+            item.classList.add("dragging");
+        });
+
+        item.addEventListener("dragend", item.classList.remove("dragging"));
+    });
+
+    dragZones.forEach((zone) => {
+        zone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+        });
+
+        zone.addEventListener("dragenter", function (e) {
+            e.preventDefault();
+        });
+
+        zone.addEventListener("drop", function (e) {
+            const id = currentTarget.getAttribute("data");
+            const currentTodo = todolist.find((item) => item.id == id);
+            const zoneStatus = this.getAttribute("data-status");
+
+            if (currentTodo) {
+                currentTodo.status = zoneStatus;
+                render(createTodoApp(), appEl);
+                attachDragListeners();
+            }
+        });
+    });
+};
+
+attachDragListeners();
+initSortable();
