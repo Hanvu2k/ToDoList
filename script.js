@@ -206,22 +206,24 @@ const editStatus = (id, status) => {
     }
 };
 
-const initSortableList = function (e, currentTarget) {
-    let sortableList = this;
+const insertAboveTask = (zone, mouseY) => {
+    const els = zone.querySelectorAll(".todo-item:not(.dragging)");
 
-    // Getting all items except currently dragging and making array of them
-    let siblings = [
-        ...sortableList.querySelectorAll(".todo-item:not(.dragging)"),
-    ];
+    let closestTask = null;
+    let closestOffset = Number.NEGATIVE_INFINITY;
 
-    // Finding the sibling after which the dragging item should be placed
-    let nextSibling = siblings.find((sibling) => {
-        let rect = sibling.getBoundingClientRect();
-        return e.clientY <= rect.top + rect.height / 2;
+    els.forEach((task) => {
+        const { top } = task.getBoundingClientRect();
+
+        const offset = mouseY - top;
+
+        if (offset < 0 && offset > closestOffset) {
+            closestOffset = offset;
+            closestTask = task;
+        }
     });
 
-    // Inserting the dragging item before the found sibling
-    sortableList.insertBefore(currentTarget, nextSibling);
+    return closestTask;
 };
 
 const attachDragListeners = () => {
@@ -242,13 +244,20 @@ const attachDragListeners = () => {
     dragZones.forEach((zone) => {
         zone.addEventListener("dragover", function (e) {
             e.preventDefault();
-            initSortableList.bind(this)(e, currentTarget);
+            const bottomTask = insertAboveTask(zone, e.clientY);
+
+            if (!bottomTask) {
+                zone.appendChild(currentTarget);
+            } else {
+                zone.insertBefore(currentTarget, bottomTask);
+            }
         });
 
         zone.addEventListener("dragenter", (e) => e.preventDefault());
 
         zone.addEventListener("drop", function (e) {
-            const id = currentTarget.getAttribute("data");
+            e.preventDefault();
+            const id = parseInt(currentTarget.getAttribute("data"));
             const currentTodo = todolist.find((item) => item.id == id);
             const zoneStatus = this.getAttribute("data-status");
 
