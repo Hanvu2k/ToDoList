@@ -1,7 +1,7 @@
 const appEl = document.querySelector("#app");
 let todolist = [
     {
-        id: 1,
+        id: 2,
         task: "Learn JavaScript",
         status: "new",
     },
@@ -11,12 +11,12 @@ let todolist = [
         status: "new",
     },
     {
-        id: 2,
+        id: 3,
         task: "Learn TypeScript",
         status: "doing",
     },
     {
-        id: 3,
+        id: 4,
         task: "Learn HTML,CSS",
         status: "finished",
     },
@@ -206,6 +206,24 @@ const editStatus = (id, status) => {
     }
 };
 
+const initSortableList = function (e, currentTarget) {
+    let sortableList = this;
+
+    // Getting all items except currently dragging and making array of them
+    let siblings = [
+        ...sortableList.querySelectorAll(".todo-item:not(.dragging)"),
+    ];
+
+    // Finding the sibling after which the dragging item should be placed
+    let nextSibling = siblings.find((sibling) => {
+        let rect = sibling.getBoundingClientRect();
+        return e.clientY <= rect.top + rect.height / 2;
+    });
+
+    // Inserting the dragging item before the found sibling
+    sortableList.insertBefore(currentTarget, nextSibling);
+};
+
 const attachDragListeners = () => {
     const dragZones = document.querySelectorAll(".todo-list__item");
     const dragItems = document.querySelectorAll(".todo-item");
@@ -222,13 +240,12 @@ const attachDragListeners = () => {
     });
 
     dragZones.forEach((zone) => {
-        zone.addEventListener("dragover", (e) => {
+        zone.addEventListener("dragover", function (e) {
             e.preventDefault();
+            initSortableList.bind(this)(e, currentTarget);
         });
 
-        zone.addEventListener("dragenter", function (e) {
-            e.preventDefault();
-        });
+        zone.addEventListener("dragenter", (e) => e.preventDefault());
 
         zone.addEventListener("drop", function (e) {
             const id = currentTarget.getAttribute("data");
@@ -245,4 +262,3 @@ const attachDragListeners = () => {
 };
 
 attachDragListeners();
-initSortable();
