@@ -55,3 +55,13 @@
 .btns {
     margin: 1rem 0;
 }
+
+.todo-item.dragging {
+    opacity: 0.5;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Kiểu cho vùng đích khi task đang được kéo vào */
+.todo-list__item.dragover {
+    border: 2px dashed #4caf50;
+}

@@ -231,6 +231,7 @@ const attachDragListeners = () => {
     const dragItems = document.querySelectorAll(".todo-item");
 
     let currentTarget = null;
+    let isDraggedInSameZone = false;
 
     dragItems.forEach((item) => {
         item.addEventListener("dragstart", function () {
@@ -238,7 +239,12 @@ const attachDragListeners = () => {
             item.classList.add("dragging");
         });
 
-        item.addEventListener("dragend", item.classList.remove("dragging"));
+        item.addEventListener("dragend", function () {
+            item.classList.remove("dragging");
+            if (isDraggedInSameZone) {
+                isDraggedInSameZone = false;
+            }
+        });
     });
 
     dragZones.forEach((zone) => {
@@ -250,7 +256,6 @@ const attachDragListeners = () => {
             const bottomTask = insertAboveTask(zone, e.clientY);
 
             if (zone !== currentZone) {
-                // Kéo sang vùng khác, cập nhật trạng thái của task
                 const id = parseInt(currentTarget.getAttribute("data"));
                 const currentTodo = todolist.find((item) => item.id === id);
                 const zoneStatus = zone.getAttribute("data-status");
@@ -268,7 +273,7 @@ const attachDragListeners = () => {
                 render(createTodoApp(), appEl);
                 attachDragListeners();
             } else {
-                // Kéo trong cùng vùng, chỉ đổi vị trí hiển thị
+                isDraggedInSameZone = true;
                 if (!bottomTask) {
                     zone.appendChild(currentTarget);
                 } else {
