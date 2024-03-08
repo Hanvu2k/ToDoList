@@ -1,12 +1,12 @@
 const appEl = document.querySelector("#app");
 let todolist = [
     {
-        id: 2,
-        task: "Learn JavaScript",
+        id: 1,
+        task: "Learn JavaScript ",
         status: "new",
     },
     {
-        id: 1,
+        id: 2,
         task: "Learn JavaScript 2",
         status: "new",
     },
@@ -244,12 +244,36 @@ const attachDragListeners = () => {
     dragZones.forEach((zone) => {
         zone.addEventListener("dragover", function (e) {
             e.preventDefault();
+            if (!currentTarget) return;
+
+            const currentZone = currentTarget?.parentNode;
             const bottomTask = insertAboveTask(zone, e.clientY);
 
-            if (!bottomTask) {
-                zone.appendChild(currentTarget);
+            if (zone !== currentZone) {
+                // Kéo sang vùng khác, cập nhật trạng thái của task
+                const id = parseInt(currentTarget.getAttribute("data"));
+                const currentTodo = todolist.find((item) => item.id === id);
+                const zoneStatus = zone.getAttribute("data-status");
+
+                if (currentTodo) {
+                    currentTodo.status = zoneStatus;
+                }
+
+                if (!bottomTask) {
+                    zone.appendChild(currentTarget);
+                } else {
+                    zone.insertBefore(currentTarget, bottomTask);
+                }
+
+                render(createTodoApp(), appEl);
+                attachDragListeners();
             } else {
-                zone.insertBefore(currentTarget, bottomTask);
+                // Kéo trong cùng vùng, chỉ đổi vị trí hiển thị
+                if (!bottomTask) {
+                    zone.appendChild(currentTarget);
+                } else {
+                    zone.insertBefore(currentTarget, bottomTask);
+                }
             }
         });
 
@@ -257,15 +281,6 @@ const attachDragListeners = () => {
 
         zone.addEventListener("drop", function (e) {
             e.preventDefault();
-            const id = parseInt(currentTarget.getAttribute("data"));
-            const currentTodo = todolist.find((item) => item.id == id);
-            const zoneStatus = this.getAttribute("data-status");
-
-            if (currentTodo) {
-                currentTodo.status = zoneStatus;
-                render(createTodoApp(), appEl);
-                attachDragListeners();
-            }
         });
     });
 };
