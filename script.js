@@ -160,7 +160,7 @@ const addTodo = () => {
     };
     console.log(newTask);
 
-    todolist.push(newTask);
+    todolist.unshift(newTask);
     inputEl.value = "";
 
     render(createTodoApp(), appEl);
