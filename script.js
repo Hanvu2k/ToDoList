@@ -43,7 +43,7 @@ const renderBtn = (id) => {
     } else {
         btn = `
         <div class="btns">
-            <button onclick="editTodo(${id})">Edit</button>
+            <button id="btnEdit" onclick="editTodo(${id})">Edit</button>
         </div>
         `;
     }
@@ -70,7 +70,9 @@ const renderNewTasks = () => {
       <div class="todo-item new-item" draggable="true" data="${item.id}">
         <div class="todo-task">
             ${renderContent(item)}            
-            <span onclick= "editStatus(${item.id} ,'doing')">Do task</span>
+            <span class="action-btn" onclick= "editStatus(${
+                item.id
+            } ,'doing')">Do task</span>
         </div>
         ${renderBtn(item.id)}
       </div>
@@ -87,7 +89,7 @@ const renderDoingTasks = () => {
       <div class="todo-item doing-item" draggable="true" data="${item.id}">
         <div div class="todo-task">
             ${renderContent(item)} 
-            <span onclick= "editStatus(${
+            <span class="action-btn" onclick= "editStatus(${
                 item.id
             }, 'finished')">Finished task</span>
          </div>
@@ -105,9 +107,9 @@ const renderFinishedTasks = () => {
     finishedTasks.forEach((item) => {
         html += `
       <div class="todo-item finishe-item" draggable="true" data="${item.id}">
-        <div div class="todo-task">
+        <div  class="todo-task">
             <span class="todo-task__title">${item.task}</span>
-            <span onclick= "editStatus(${item.id}, 'remove')">Delete task</span>
+            <span class="action-btn" onclick= "editStatus(${item.id}, 'remove')">Delete task</span>
         </div>
       </div>
     `;
@@ -121,8 +123,8 @@ const createTodoApp = () => {
         <div class="todo-container">
             <div class="todo-list__item" data-status="new">
                 <h2 class="todo-heading">New tasks</h2>
-                <div>
-                    <input id="input"  type="text" placeholder="Add job"/>
+                <div class="todo-input">
+                    <input id="input"  type="text" placeholder="Add a task"/>
                     <button id="btnAdd" onclick="addTodo()">Add</button>
                 </div>
                 ${renderNewTasks()}
@@ -176,6 +178,12 @@ const editTodo = (id) => {
 const saveTodo = (id) => {
     const inputEl = document.querySelector("#inputEdit");
     const currentTodo = todolist.find((item) => item.id === id);
+
+    if (!inputEl.value) {
+        alert("Can't leave task empty!");
+        return editTodo(id);
+    }
+
     currentTodo.task = inputEl.value;
     editMode = null;
     render(createTodoApp(), appEl);
@@ -192,6 +200,10 @@ const editStatus = (id, status) => {
     const currentTodo = todolist.find((item) => item.id === id);
 
     if (status === "remove") {
+        if (!confirm("Are you sure you want to delete this task?")) {
+            return;
+        }
+
         const currenTodo = todolist.filter((item) => item.id !== id);
         todolist = [...currenTodo];
         render(createTodoApp(), appEl);
