@@ -2,7 +2,7 @@ const appEl = document.querySelector("#app");
 let todolist = [
     {
         id: 1,
-        task: "Learn JavaScript ",
+        task: "Learn JavaScript",
         status: "new",
     },
     {
@@ -145,20 +145,34 @@ const createTodoApp = () => {
 
 render(createTodoApp(), appEl);
 
+const validateTodoApp = (value) => {
+    if (!value) {
+        alert("Can not leave task empty!");
+        return false;
+    }
+
+    const existTask = todolist.find(
+        (item) => item.task.toLowerCase().trim() === value.toLowerCase().trim()
+    );
+
+    if (existTask) {
+        alert("This task already exists");
+        return false;
+    }
+
+    return true;
+};
+
 const addTodo = () => {
     let inputEl = document.querySelector("#input");
 
-    if (!inputEl.value) {
-        alert("Please enter a task");
-        return;
-    }
+    if (!validateTodoApp(inputEl.value)) return;
 
     const newTask = {
         id: Math.floor(Math.random() * 100),
         task: inputEl.value,
         status: "new",
     };
-    console.log(newTask);
 
     todolist.unshift(newTask);
     inputEl.value = "";
